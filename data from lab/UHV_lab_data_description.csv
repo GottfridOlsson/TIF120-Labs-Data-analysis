@@ -1,0 +1,14 @@
+File name,Experiment,Surface,"Incident Voltage (kV), from gauge","Current (mA), from gauge",Time per step (ms),Sweeps,Step size (eV),Comment
+Group1_1,AES,Mo,2.9,0.6,16.7,1,1,Elastic peak for reference
+Group1_2,AES,Mo,2.9,0.6,16.7,1,1,"Full spectrum, one sweep, differentiated"
+Group1_3,AES,Mo,2.9,0.8,16.7,1,1,"Lower range, one sweep"
+Group1_4,AES,Mo,2.9,0.8,16.7,1,1,"Lower range, one sweep, differentiated"
+Group1_5,AES,Mo,2.9,0.8,20,5,1,"Lower range, 5 sweeps"
+Group1_6,AES,Mo,2.9,0.8,20,5,1,"Lower range, differentiated"
+Group1_7,AES,Mo,2.9,0.8,20,5,0.5,Very low range
+Group1_8,AES,Mo,2.9,0.8,20,5,0.5,"Very low range, differentiated"
+Group1_9,EELS,Mo,0.5,0.4,20,1,0.5,Full EELS range
+Group1_A,EELS,Mo,0.5,0.4,20,1,0.2,Elastic reference
+Group1_B,EELS,Mo,0.5,0.4,20,5,0.5,High res EELS without inelastic peek
+Group1_C,AES,Mo,3.0,0.4,20,5,0.8,"Full range, high res AES spectra. Wierd drop in spectrum"
+Group1_D,AES,Mo,3.0,0.4,20,5,0.8,"Full range, high res AES spectra. Wierd drop in spectrum. Differentiated"
