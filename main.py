@@ -17,7 +17,7 @@ k = data[header[2]]
 
 
 # Convert #
-epsilon_real = n**2 - k**2
+epsilon_real      = n**2 - k**2
 epsilon_imaginary = 2*n*k
 eV = h*c/(wavelength*1e-6) # [eV]
 
@@ -33,7 +33,6 @@ plt.show()
 # Polarizability method (Barnes and Le Ru) #
 
 # Bulk polarizability of thin slab according to Barnes
-
 alpha_V_real = 1 - epsilon_real / (epsilon_real**2 + epsilon_imaginary**2)
 alpha_V_imaginary = epsilon_imaginary / (epsilon_real**2 + epsilon_imaginary**2)
 
@@ -41,9 +40,23 @@ plt.plot(eV, alpha_V_real, label="Re($\\alpha_V$)")
 plt.plot(eV, alpha_V_imaginary, label="Im($\\alpha_V$)")
 plt.legend()
 plt.xlabel("Energy (eV)")
-plt.ylabel("Polarizability (units of $\\epsilon_0$)")
+plt.ylabel("Polarizability of thin slab (units of $\\epsilon_0$)")
 plt.show()
 
+# Polarizability of small sphere
+alpha_sphere_real = ((epsilon_real - 1) * (epsilon_real + 2) + epsilon_imaginary**2) \
+                    / (2 * epsilon_imaginary**2)
+alpha_sphere_imaginary = ((epsilon_real + 2) * epsilon_imaginary - (epsilon_real - 1) * epsilon_imaginary) \
+                        / ((epsilon_real + 2)**2 + epsilon_imaginary**2)
+alpha_sphere_magnitude = np.sqrt(alpha_sphere_real**2 + alpha_sphere_imaginary**2)
+
+plt.plot(eV, alpha_sphere_real, label="Re($\\alpha_{Sphere}$)")
+plt.plot(eV, alpha_sphere_imaginary, label="Im($\\alpha_{Sphere}$)")
+plt.plot(eV, alpha_sphere_magnitude, label="Mag($\\alpha_{Sphere}$)")
+plt.legend()
+plt.xlabel("Energy (eV)")
+plt.ylabel("Polarizability of sphere (a.u.)")
+plt.show()
 
 # Energy loss function (Weaver) #
 els_bulk = epsilon_imaginary / (epsilon_real**2 + epsilon_imaginary**2)
@@ -56,6 +69,13 @@ plt.xlabel("Energy (eV)")
 plt.ylabel("Energy loss functinon (arbitrary unit)")
 plt.show()
 
+CSV.print_arrays_to_CSV("output/ELS_theoretical_bulk.csv", "Energy (eV)", eV, "Loss (a.u.)", els_bulk)
+CSV.print_arrays_to_CSV("output/ELS_theoretical_surface.csv", "Energy (eV)", eV, "Loss (a.u.)", els_surface)
+CSV.print_arrays_to_CSV("output/polariability_of_sphere.csv", 
+                        "Energy (eV)", eV,
+                        "Re(alpha) (a.u.)", alpha_sphere_real,
+                        "Im(alpha) (a.u.)", alpha_sphere_imaginary,
+                        "abs(alpha) (a.u.)", alpha_sphere_magnitude)
 
 '''
 Compare and discuss the bulk and surface plasmon energies for Mo measured by EELS
