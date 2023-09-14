@@ -74,7 +74,7 @@ def combine_CSV_files_to_one(output_path, paths):
 
 
 
-def print_arrays_to_CSV(path_to_CSV_file, *args, print_message=False):
+def print_arrays_to_CSV(path_to_CSV_file, *args, print_message=True):
     """Prints array(s) with corresponding header(s) to a file with comma separated values (CSV)
 
         Input:
