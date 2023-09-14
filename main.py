@@ -1,5 +1,6 @@
 import numpy as np
 import CSV_handler as CSV
+import matplotlib.pyplot as plt
 
 
 # Constants #
@@ -20,11 +21,40 @@ epsilon_real = n**2 - k**2
 epsilon_imaginary = 2*n*k
 eV = h*c/(wavelength*1e-6) # [eV]
 
+plt.plot(eV, epsilon_real, label="Re($\\epsilon$)")
+plt.plot(eV, epsilon_imaginary, label="Im($\\epsilon$)")
+plt.ylabel("Relative permittivity")
+plt.xlabel("Energy (eV)")
+plt.ylim(-10, 10)
+plt.legend()
+plt.show()
+
 
 # Polarizability method (Barnes and Le Ru) #
 
+# Bulk polarizability of thin slab according to Barnes
+
+alpha_V_real = 1 - epsilon_real / (epsilon_real**2 + epsilon_imaginary**2)
+alpha_V_imaginary = epsilon_imaginary / (epsilon_real**2 + epsilon_imaginary**2)
+
+plt.plot(eV, alpha_V_real, label="Re($\\alpha_V$)")
+plt.plot(eV, alpha_V_imaginary, label="Im($\\alpha_V$)")
+plt.legend()
+plt.xlabel("Energy (eV)")
+plt.ylabel("Polarizability (units of $\\epsilon_0$)")
+plt.show()
+
 
 # Energy loss function (Weaver) #
+els_bulk = epsilon_imaginary / (epsilon_real**2 + epsilon_imaginary**2)
+els_surface = epsilon_imaginary / ((1+epsilon_real)**2 + epsilon_imaginary**2)
+
+plt.plot(eV, els_bulk, label="Energy loss function, bulk")
+plt.plot(eV, els_surface, label="Energy loss function, surface")
+plt.legend()
+plt.xlabel("Energy (eV)")
+plt.ylabel("Energy loss functinon (arbitrary unit)")
+plt.show()
 
 
 '''
