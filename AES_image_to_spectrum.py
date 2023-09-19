@@ -35,6 +35,7 @@ for image in images:
 
     value -= np.min(value)
     value /= np.max(value)
+    value = 1-value
 
     #plt.imshow(img_data)
     #plt.plot(value, "k--")

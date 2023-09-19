@@ -2,21 +2,134 @@ import numpy as np
 import matplotlib.pyplot as plt
 import CSV_handler as CSV
 
-reference_elements = ["Ag", "Ar", "Be", "C", "Ca", "Cr", "I", "Mo", "N", "O", "Pd", "Ti"]
 
 data = np.genfromtxt("data from lab/GROUP1_6.AES")
 energy = data[:,0]
 intensity = data[:,1]
+intensity = intensity[energy < 600]
+energy    = energy[energy < 600]
 intensity -= np.min(intensity)
 intensity /= np.max(intensity)
-plt.plot(data[:,0], data[:,1], "k", linewidth=1)
 
-for i, element in enumerate(reference_elements):
+# Find positions of peaks
+element_data = {
+    "Mo": {"peak_range": (165, 185), "sensitivity": (0.33, 0.03), "transition": "MNN"},
+    "C":  {"peak_range": (230, 270), "sensitivity": (0.20, 0.04), "transition": "KLL"}, 
+    "N":  {"peak_range": (350, 375), "sensitivity": (0.32, 0.07), "transition": "KLL"},
+    "O":  {"peak_range": (470, 500), "sensitivity": (0.49, 0.04), "transition": "KLL"}
+}
+
+# Get data for peak
+for element in element_data:
+    
+    # Data from measurement 
+    start, end = element_data[element]["peak_range"]
+    indices = (energy > start) & (energy < end)
+    element_data[element]["min_energy"]     = energy[indices][np.argmin(intensity[indices])]
+    element_data[element]["max_energy"]     = energy[indices][np.argmax(intensity[indices])]
+    element_data[element]["min_intensity"]  = np.min(intensity[indices])
+    element_data[element]["max_intensity"]  = np.max(intensity[indices])
+    element_data[element]["peak_center"]    = 0.5 * (element_data[element]["min_energy"] + element_data[element]["max_energy"])
+    element_data[element]["peak_amplitude"] = element_data[element]["max_intensity"] - element_data[element]["min_intensity"]
+    element_data[element]["corrected_amplitude"] = element_data[element]["peak_amplitude"] / element_data[element]["sensitivity"][0]
+
+    # Data from reference
     csv = CSV.read("AES_reference/csv/" + element + ".csv")
-    energy = np.array(csv["Energy (eV)"])
-    intensity = np.array(csv["Intensity (a.u.)"])
-    plt.plot(energy, 1.1 + 0.2 * (i + intensity), "k", linewidth=1)
+    energy_peak = np.array(csv["Energy (eV)"])
+    intensity_peak = np.array(csv["Intensity (a.u.)"])
+    element_data[element]["reference_energy"] = energy_peak
+    element_data[element]["reference_intensity"] = intensity_peak
+    element_data[element]["reference_center"] = 0.5 * (energy_peak[np.argmin(intensity_peak)] + energy_peak[np.argmax(intensity_peak)])
 
-#plt.ylim((-0.1, 3))
-plt.xlim((0, 700))
+# Calculate total amplitude
+total_amplitude = 0
+for element in element_data:
+    total_amplitude +=  element_data[element]["corrected_amplitude"]
+
+# Calculate relative composition
+for element in element_data:
+    element_data[element]["fraction"] = element_data[element]["corrected_amplitude"] / total_amplitude
+
+# Calculate error margin in fraction
+for element in element_data: 
+    rel_sensitivity_error = element_data[element]["sensitivity"][1] / element_data[element]["sensitivity"][0]
+    amplitude = element_data[element]["corrected_amplitude"]
+    relative_variance = rel_sensitivity_error**2 * (total_amplitude - amplitude)**2 / total_amplitude**2
+    
+    for other_element in element_data:
+        if (other_element == element): continue
+        rel_sensitivity_error = element_data[other_element]["sensitivity"][1] / element_data[other_element]["sensitivity"][0]
+        amplitude = element_data[element]["corrected_amplitude"]
+        relative_variance += rel_sensitivity_error**2 * amplitude**2 / total_amplitude**2
+
+    relative_error = np.sqrt(relative_variance)
+    element_data[element]["fraction_error"] = element_data[element]["fraction"] * relative_error
+
+for element in element_data: 
+    print(f"{element}: ({100*element_data[element]['fraction']:.2f} ± {100*element_data[element]['fraction_error']:.2f})%")
+
+# Calibrate energy
+center_measured = np.array([element_data[element]["peak_center"] for element in element_data])
+center_expected = np.array([element_data[element]["reference_center"] for element in element_data])
+param = np.polyfit(center_measured, center_expected, 1)
+energy_calibrated = np.polyval(param, energy)
+
+# Plot calibration line
+energy_measured = np.linspace(0, 650)
+energy_corrected = np.polyval(param, energy_measured)
+#plt.plot(center_measured, center_expected, "o")
+#plt.plot(energy_measured, energy_corrected, "k--")
+#plt.show()
+
+# Plot reference curves
+for i, element in enumerate(element_data):
+
+    energy_peak = element_data[element]["reference_energy"]
+    intensity_peak = element_data[element]["reference_intensity"]
+
+    shift = [0.1, 0.6, 0.1, 0.1][i]
+    amp = element_data[element]["peak_amplitude"]
+    low = element_data[element]["min_intensity"]
+    
+    label = None
+    if not i: label = "Reference"
+    plt.plot(           energy_peak, shift + low + amp + amp * intensity_peak, "k", linewidth=1, label=label)
+    plt.text(np.max(energy_peak)+10, shift + low + amp + amp * intensity_peak[-1] - 0.03, element)
+
+# Plot measured spectrum
+plt.plot(energy_calibrated, intensity, "k", linewidth=2, label="Measured")
+
+# Also plot reference curves for some elements with no visible peaks
+for i, element in enumerate(["Ar"]):
+    csv = CSV.read("AES_reference/csv/" + element + ".csv")
+    energy_peak = np.array(csv["Energy (eV)"])
+    intensity_peak = np.array(csv["Intensity (a.u.)"])
+
+    label = None
+    if not i: label = "Reference (undetected)"
+    plt.plot(energy_peak, 0.2 * intensity_peak-0.1, "k--", linewidth=1, label=label)
+    plt.text(np.max(energy_peak)+10, 0.2 * intensity_peak[-1]-0.13, element)
+
+# Plot amplitude indicators
+for element in element_data:
+    max_energy    = np.polyval(param, element_data[element]["max_energy"])
+    max_intensity = element_data[element]["max_intensity"]
+    min_energy    = np.polyval(param, element_data[element]["min_energy"])
+    min_intensity = element_data[element]["min_intensity"]
+    lim = max(min_energy, max_energy) + 40
+    plt.hlines(max_intensity, max_energy, lim, "r", linestyles="--", linewidth=1)
+    plt.hlines(min_intensity, min_energy, lim, "r", linestyles="--", linewidth=1)
+    plt.vlines(lim-5, min_intensity, max_intensity, "r", linewidth=1)
+    plt.text(lim-30, min_intensity-0.1, f'{element_data[element]["peak_amplitude"]:.2f}', color="r")
+
+plt.xlabel("Energy / eV")
+plt.ylabel("d$N$/d$E$")
+plt.ylim(-0.3, 2.2)
+plt.legend()
+plt.tick_params(labelleft=False)
+plt.tick_params(left=False)
+plt.tight_layout()
+#plt.grid()
 plt.show()
+
+
