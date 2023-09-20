@@ -29,6 +29,11 @@ for image in images:
     defined_indices = value != 0
     chunk_label = np.zeros_like(defined_indices, dtype=np.int)
 
+    value -= np.min(value)
+    value /= np.max(value)
+    value = 1-value
+
+
     chunk_count = 0
     for i in range(1, len(defined_indices)):
         if (defined_indices[i] and not defined_indices[i-1]):
@@ -38,10 +43,6 @@ for image in images:
 
     for chunk in range(1, np.max(chunk_label)+1):
         chunk_indices = chunk_label == chunk
-       
-        value -= np.min(value)
-        value /= np.max(value)
-        value = 1-value
 
         CSV.print_arrays_to_CSV(
         "EELS_reference/csv/" + image + "_" + str(chunk) + ".csv", 
