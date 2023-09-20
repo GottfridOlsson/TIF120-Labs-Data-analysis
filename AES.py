@@ -1,9 +1,27 @@
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import CSV_handler as CSV
+import os
+
+matplotlib.rcParams.update({
+    "text.usetex": True,
+    "font.family": "serif", 
+    "font.serif" : ["Computer Modern Roman"]
+    })
+
+axis=11
+tick=9
+legend=9
+matplotlib.rc('font',   size=axis)      
+matplotlib.rc('axes',   titlesize=axis) 
+matplotlib.rc('axes',   labelsize=axis) 
+matplotlib.rc('xtick',  labelsize=tick)
+matplotlib.rc('ytick',  labelsize=tick)
+matplotlib.rc('legend', fontsize=legend)
 
 
-fig = plt.figure()
+fig = plt.figure(figsize=(16/2.54, 12/2.54))
 ax = fig.add_subplot(3,1,(2,3))
 
 data = np.genfromtxt("data from lab/GROUP1_6.AES")
@@ -97,7 +115,7 @@ for i, element in enumerate(element_data):
     label = None
     if not i: label = "Reference"
     ax.plot(           energy_peak, shift + low + amp + amp * intensity_peak, "k", linewidth=1, label=label)
-    ax.text(np.max(energy_peak)+10, shift + low + amp + amp * intensity_peak[-1] - 0.03, element)
+    ax.text(np.max(energy_peak)+10, shift + low + amp + amp * intensity_peak[-1] - 0.03, element, fontsize=legend)
 
 # Plot measured spectrum
 ax.plot(energy_calibrated, intensity, "k", linewidth=2, label="Measured")
@@ -109,9 +127,9 @@ for i, element in enumerate(["Ar"]):
     intensity_peak = np.array(csv["Intensity (a.u.)"])
 
     label = None
-    if not i: label = "Reference (undetected)"
+    if not i: label = "Reference"
     ax.plot(energy_peak, 0.2 * intensity_peak-0.1, "k--", linewidth=1, label=label)
-    ax.text(np.max(energy_peak)+10, 0.2 * intensity_peak[-1]-0.13, element)
+    ax.text(np.max(energy_peak)+10, 0.2 * intensity_peak[-1]-0.13, element, fontsize=legend)
 
 # Plot amplitude indicators
 for element in element_data:
@@ -123,12 +141,12 @@ for element in element_data:
     ax.hlines(max_intensity, max_energy, lim, "r", linestyles="--", linewidth=1)
     ax.hlines(min_intensity, min_energy, lim, "r", linestyles="--", linewidth=1)
     ax.vlines(lim-5, min_intensity, max_intensity, "r", linewidth=1)
-    ax.text(lim-30, min_intensity-0.1, f'{element_data[element]["peak_amplitude"]:.2f}', color="r")
+    ax.text(lim-30, min_intensity-0.11, f'{element_data[element]["peak_amplitude"]:.2f}', color="r", fontsize=legend)
 
 ax.set_xlabel("Energy / eV")
 ax.set_ylabel("d$N$/d$E$")
 ax.set_ylim(-0.3, 2.2)
-ax.legend()
+ax.legend(framealpha=1, loc='upper left')
 ax.tick_params(labelleft=False)
 ax.tick_params(left=False)
 
@@ -151,5 +169,5 @@ ax.set_ylabel("d$N$/d$E$")
 
 fig.tight_layout()
 
+plt.savefig(os.path.abspath(os.path.dirname(__file__)) + '/Figures/TIF120_UHV-lab_AES-spectrum.pdf')
 plt.show()
-
