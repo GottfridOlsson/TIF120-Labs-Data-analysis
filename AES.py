@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import CSV_handler as CSV
 
 
+fig = plt.figure()
+ax = fig.add_subplot(3,1,(2,3))
+
 data = np.genfromtxt("data from lab/GROUP1_6.AES")
 energy = data[:,0]
 intensity = data[:,1]
@@ -77,9 +80,9 @@ energy_calibrated = np.polyval(param, energy)
 # Plot calibration line
 energy_measured = np.linspace(0, 650)
 energy_corrected = np.polyval(param, energy_measured)
-#plt.plot(center_measured, center_expected, "o")
-#plt.plot(energy_measured, energy_corrected, "k--")
-#plt.show()
+#ax.plot(center_measured, center_expected, "o")
+#ax.plot(energy_measured, energy_corrected, "k--")
+#ax.show()
 
 # Plot reference curves
 for i, element in enumerate(element_data):
@@ -93,11 +96,11 @@ for i, element in enumerate(element_data):
     
     label = None
     if not i: label = "Reference"
-    plt.plot(           energy_peak, shift + low + amp + amp * intensity_peak, "k", linewidth=1, label=label)
-    plt.text(np.max(energy_peak)+10, shift + low + amp + amp * intensity_peak[-1] - 0.03, element)
+    ax.plot(           energy_peak, shift + low + amp + amp * intensity_peak, "k", linewidth=1, label=label)
+    ax.text(np.max(energy_peak)+10, shift + low + amp + amp * intensity_peak[-1] - 0.03, element)
 
 # Plot measured spectrum
-plt.plot(energy_calibrated, intensity, "k", linewidth=2, label="Measured")
+ax.plot(energy_calibrated, intensity, "k", linewidth=2, label="Measured")
 
 # Also plot reference curves for some elements with no visible peaks
 for i, element in enumerate(["Ar"]):
@@ -107,8 +110,8 @@ for i, element in enumerate(["Ar"]):
 
     label = None
     if not i: label = "Reference (undetected)"
-    plt.plot(energy_peak, 0.2 * intensity_peak-0.1, "k--", linewidth=1, label=label)
-    plt.text(np.max(energy_peak)+10, 0.2 * intensity_peak[-1]-0.13, element)
+    ax.plot(energy_peak, 0.2 * intensity_peak-0.1, "k--", linewidth=1, label=label)
+    ax.text(np.max(energy_peak)+10, 0.2 * intensity_peak[-1]-0.13, element)
 
 # Plot amplitude indicators
 for element in element_data:
@@ -117,19 +120,36 @@ for element in element_data:
     min_energy    = np.polyval(param, element_data[element]["min_energy"])
     min_intensity = element_data[element]["min_intensity"]
     lim = max(min_energy, max_energy) + 40
-    plt.hlines(max_intensity, max_energy, lim, "r", linestyles="--", linewidth=1)
-    plt.hlines(min_intensity, min_energy, lim, "r", linestyles="--", linewidth=1)
-    plt.vlines(lim-5, min_intensity, max_intensity, "r", linewidth=1)
-    plt.text(lim-30, min_intensity-0.1, f'{element_data[element]["peak_amplitude"]:.2f}', color="r")
+    ax.hlines(max_intensity, max_energy, lim, "r", linestyles="--", linewidth=1)
+    ax.hlines(min_intensity, min_energy, lim, "r", linestyles="--", linewidth=1)
+    ax.vlines(lim-5, min_intensity, max_intensity, "r", linewidth=1)
+    ax.text(lim-30, min_intensity-0.1, f'{element_data[element]["peak_amplitude"]:.2f}', color="r")
 
-plt.xlabel("Energy / eV")
-plt.ylabel("d$N$/d$E$")
-plt.ylim(-0.3, 2.2)
-plt.legend()
-plt.tick_params(labelleft=False)
-plt.tick_params(left=False)
-plt.tight_layout()
-#plt.grid()
+ax.set_xlabel("Energy / eV")
+ax.set_ylabel("d$N$/d$E$")
+ax.set_ylim(-0.3, 2.2)
+ax.legend()
+ax.tick_params(labelleft=False)
+ax.tick_params(left=False)
+
+
+# Plot full spectrum for reference
+ax = fig.add_subplot(3,1,1)
+
+data = np.genfromtxt("data from lab/GROUP1_D.AES")
+energy = data[:,0]
+energy_corrected = np.polyval(param, energy)
+intensity = data[:,1]
+intensity -= np.min(intensity)
+intensity /= np.max(intensity)
+
+ax.plot(energy_corrected, intensity, "k-")
+ax.set_ylim(0.765, 0.825)
+ax.tick_params(labelleft=False)
+ax.tick_params(left=False)
+ax.set_ylabel("d$N$/d$E$")
+
+fig.tight_layout()
+
 plt.show()
-
 
