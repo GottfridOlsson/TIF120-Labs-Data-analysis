@@ -46,5 +46,5 @@ for image in images:
         CSV.print_arrays_to_CSV(
         "EELS_reference/csv/" + image + "_" + str(chunk) + ".csv", 
         "Energy (eV)", energy[chunk_indices], 
-        "Intensity (a.u.)", value[chunk_indices])
+        "Derivative of intensity (a.u.)", value[chunk_indices])
     
