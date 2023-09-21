@@ -9,7 +9,7 @@ c = 3e8         # Speed of light in vacuum [m/s]
 
 
 # Read CSV #
-data = CSV.read('Mo_Werner_2009_formatted.csv')
+data = CSV.read('Mo_Werner_2009_formatted_from_Canvas.csv')
 header = CSV.get_header(data)
 wavelength = data[header[0]] # micrometer
 n = data[header[1]]
